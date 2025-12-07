@@ -1,0 +1,8 @@
+FROM node:20.19.6-slim
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV TZ=UTC
+ENV ENV_SUBSTITUTION_ENABLE=true
+
+WORKDIR /app

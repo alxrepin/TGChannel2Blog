@@ -1,0 +1,15 @@
+name: "rpw"
+services:
+  app:
+    container_name: "rpw-front"
+    build:
+      dockerfile: .docker/container/app/Dockerfile.local
+      context: ../../.
+    restart: on-failure
+    tty: true
+    volumes:
+      - ../../.:/app
+    ports:
+      - "127.0.0.1:3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
