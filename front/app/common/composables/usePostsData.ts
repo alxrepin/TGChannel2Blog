@@ -1,6 +1,6 @@
 import type { Post } from '~/modules/posts/types';
 
-export default function usePostsData() {
+export function usePostsData() {
   const posts: Post[] = [
     {
       id: '1',

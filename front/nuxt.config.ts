@@ -1,19 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
-  devtools: {
-    enabled: true,
-  },
-  server: {
-    host: '0.0.0.0',
-  },
-  css: ['@@/assets/styles/app.scss'],
-  plugins: ['@@/plugins/mastercss.client.ts'],
-  eslint: {
-    config: {
-      stylistic: true,
-    },
-  },
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
@@ -30,4 +16,18 @@ export default defineNuxtConfig({
       },
     ],
   ],
+  plugins: ['@@/plugins/mastercss.client.ts'],
+  imports: {
+    autoImport: false,
+  },
+  devtools: {
+    enabled: true,
+  },
+  css: ['@@/assets/styles/app.scss'],
+  compatibilityDate: '2025-07-15',
+  eslint: {
+    config: {
+      stylistic: true,
+    },
+  },
 });

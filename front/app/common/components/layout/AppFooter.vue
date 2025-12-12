@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-  test: string;
+  text: string;
 }
 
 defineProps<Props>();

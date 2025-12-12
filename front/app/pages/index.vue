@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import AppHeader from '~/components/layout/AppHeader.vue';
-import ChannelAvatar from '~/modules/hero/components/ChannelAvatar.vue';
-import ChannelInfo from '~/modules/hero/components/ChannelInfo.vue';
-import ChannelStats from '~/modules/hero/components/ChannelStats.vue';
-import SubscribeButton from '~/features/SubscribeButton.vue';
 import PostGrid from '~/features/PostGrid.vue';
-import AppFooter from '~/components/layout/AppFooter.vue';
-import UiContainer from '~/components/ui/UiContainer.vue';
 
-const { channel } = useChannelData();
+import Hero from '~/modules/hero/components/Hero.vue';
+import UiContainer from '~/common/components/ui/UiContainer.vue';
+import { useChannelData } from '~/common/composables/useChannelData';
+import { usePostsData } from '~/common/composables/usePostsData';
+import { useHead } from '#imports';
+
+const channel = useChannelData();
 const { posts } = usePostsData();
 
 const postsTotal = posts.length;
@@ -50,18 +49,10 @@ useHead({
 </script>
 
 <template>
+  <UiContainer class="flex flex:column ai:center">
+    <Hero />
+  </UiContainer>
   <UiContainer>
-    <AppHeader>
-      <ChannelAvatar :src="channel.avatar" :alt="channel.name" class="mb:20" />
-      <ChannelInfo :name="channel.name" :description="channel.description" />
-      <div class="pb:20">
-        <ChannelStats :subscriber-count="channel.subscriberCount" />
-      </div>
-      <SubscribeButton :telegram-handle="channel.telegramHandle" />
-    </AppHeader>
-
     <PostGrid :posts="posts" :total="postsTotal" />
-
-    <AppFooter :text="channel.name" />
   </UiContainer>
 </template>

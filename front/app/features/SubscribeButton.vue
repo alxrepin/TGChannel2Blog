@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import UiButton from '~/common/components/ui/UiButton.vue';
+import { computed } from '#imports';
+
 interface Props {
   telegramHandle: string;
   size?: string;

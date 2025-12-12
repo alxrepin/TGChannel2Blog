@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from '#imports';
+
 interface Props {
   variant?: 'default' | 'elevated' | 'outlined';
   padding?: 'none' | 'sm' | 'md' | 'lg';
@@ -10,7 +12,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const cardClasses = computed(() => {
-  const base = 'r:24';
+  const base = 'r:24 rel';
   const hover =
     'outline:1|solid|fade-80:hover box-shadow:0|0|20|10|fade-88:hover ~ease-in|300ms ~property:all';
 

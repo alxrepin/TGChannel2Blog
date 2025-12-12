@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from '#imports';
+
 interface Props {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';

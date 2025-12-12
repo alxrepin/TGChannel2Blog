@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { computed } from '#imports';
+
 interface Props {
+  as?: 'div' | 'section' | 'header' | 'main' | 'footer' | 'nav';
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   padding?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  as: 'section',
   size: 'lg',
   padding: true,
 });
@@ -27,7 +31,7 @@ const containerClasses = computed(() => {
 </script>
 
 <template>
-  <div :class="containerClasses">
+  <component :is="as" :class="containerClasses">
     <slot />
-  </div>
+  </component>
 </template>

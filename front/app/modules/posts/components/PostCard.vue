@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Post } from '../types';
+import UiCard from '~/common/components/ui/UiCard.vue';
+import { computed, toRefs } from '#imports';
 
 interface Props {
   post: Post;
@@ -11,6 +13,7 @@ const { title, excerpt, publishedAt, thumbnail, hasImage } = toRefs(props.post);
 
 const formattedDate = computed(() => {
   const date = new Date(props.post.publishedAt);
+
   return new Intl.DateTimeFormat('ru-RU', {
     day: 'numeric',
     month: 'short',
