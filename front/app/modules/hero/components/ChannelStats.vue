@@ -1,9 +1,9 @@
 <script setup lang="ts">
 interface Props {
-  subscriberCount: number
+  subscriberCount: number;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>
 
 <template>

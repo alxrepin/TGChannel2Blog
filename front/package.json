@@ -7,7 +7,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "vue-tsc --noEmit && prettier . --write && eslint . && stylelint \"**/*.{vue,css,scss}\"",
+    "lint:fix": "eslint . --fix && stylelint \"**/*.{vue,css,scss}\" --fix"
   },
   "dependencies": {
     "@master/css": "^1.37.8",
@@ -20,9 +22,33 @@
     "@nuxt/scripts": "^0.13.0",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@unhead/vue": "^2.0.19",
-    "eslint": "^9.39.1",
     "nuxt": "^4.2.1",
+    "vite-tsconfig-paths": "^5.1.4",
     "vue": "^3.5.25",
     "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsdoc": "^61.5.0",
+    "eslint-plugin-jsonc": "^2.21.0",
+    "eslint-plugin-unicorn": "^62.0.0",
+    "eslint-plugin-vue": "^10.6.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "postcss": "^8.5.6",
+    "postcss-scss": "^4.0.9",
+    "prettier": "^3.7.4",
+    "sass": "^1.96.0",
+    "stylelint": "^16.26.1",
+    "stylelint-config-html": "^1.1.0",
+    "stylelint-config-recommended-vue": "^1.6.1",
+    "stylelint-config-standard": "^39.0.1",
+    "stylelint-config-standard-scss": "^16.0.0",
+    "stylelint-order": "^7.0.0",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.1.8"
   }
 }

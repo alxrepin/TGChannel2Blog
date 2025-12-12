@@ -10,13 +10,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Post } from '~/modules/posts/types'
-import PostCard from "~/modules/posts/components/PostCard.vue";
+import type { Post } from '~/modules/posts/types';
+import PostCard from '~/modules/posts/components/PostCard.vue';
 
 interface Props {
-  post: Post | null
-  title: string
+  post: Post | null;
+  title: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>

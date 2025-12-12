@@ -14,14 +14,8 @@
         {{ channelName }}
       </div>
     </NuxtLink>
-    
-    <UiButton
-      tag="a"
-      :href="telegramLink"
-      target="_blank"
-      rel="noopener noreferrer"
-      size="sm"
-    >
+
+    <UiButton tag="a" :href="telegramLink" target="_blank" rel="noopener noreferrer" size="sm">
       <Icon name="mdi:telegram" />
       Подписаться
     </UiButton>
@@ -30,12 +24,12 @@
 
 <script setup lang="ts">
 interface Props {
-  channelName: string
-  avatarSrc: string
-  telegramHandle: string
+  channelName: string;
+  avatarSrc: string;
+  telegramHandle: string;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const telegramLink = computed(() => `https://t.me/${props.telegramHandle}`)
+const telegramLink = computed(() => `https://t.me/${props.telegramHandle}`);
 </script>
