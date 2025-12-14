@@ -1,13 +1,16 @@
-export interface Post {
-  id: string;
-  title: string;
-  excerpt: string;
-  publishedAt: string;
-  thumbnail?: string;
-  hasImage: boolean;
-}
+import type { Paginate } from '~/common/types';
 
-export interface PostsCollection {
-  items: Post[];
-  total: number;
-}
+export type TPostSnippet = {
+  id: number;
+  url: string;
+  title?: string;
+  text?: string;
+  thumbnail?: string;
+  createdAt: string;
+  groupId: number;
+};
+
+export type TPostSnippetCollection = {
+  items: TPostSnippet[];
+  paginate: Paginate;
+};

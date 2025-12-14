@@ -6,7 +6,7 @@ import AppFooter from '~/common/components/layout/AppFooter.vue';
 
 <template>
   <AppHeader />
-  <AppContent class="py:50">
+  <AppContent class="py:88">
     <slot />
   </AppContent>
   <AppFooter text="R — Repin" />

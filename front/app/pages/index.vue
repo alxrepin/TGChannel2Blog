@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import PostGrid from '~/features/PostGrid.vue';
-
 import Hero from '~/modules/hero/components/Hero.vue';
 import UiContainer from '~/common/components/ui/UiContainer.vue';
 import { useChannelData } from '~/common/composables/useChannelData';
-import { usePostsData } from '~/common/composables/usePostsData';
-import { useHead } from '#imports';
+import { fetchPosts } from '~/modules/posts/api/posts';
+import { computed, useHead, useAsyncData } from '#imports';
+import PostCard from '~/modules/posts/components/PostCard.vue';
+import type { TPostSnippetCollection } from '~/modules/posts/types';
 
 const channel = useChannelData();
-const { posts } = usePostsData();
-
-const postsTotal = posts.length;
+const { data: posts } = useAsyncData<TPostSnippetCollection>(() => fetchPosts(1, 6));
+const total = computed(() => posts.value?.paginate.count || 0);
 
 // SEO оптимизация
 useHead({
@@ -53,6 +52,11 @@ useHead({
     <Hero />
   </UiContainer>
   <UiContainer>
-    <PostGrid :posts="posts" :total="postsTotal" />
+    <h2 class="f:24 f:bold pb:32">
+      Посты <span class="pl:6 color:fade-70">{{ total }}</span>
+    </h2>
+    <div class="grid gap:20 grid-cols:1 grid-cols:2@md grid-cols:3@2xl">
+      <PostCard v-for="post in posts.items" :key="post.id" :post="post" />
+    </div>
   </UiContainer>
 </template>

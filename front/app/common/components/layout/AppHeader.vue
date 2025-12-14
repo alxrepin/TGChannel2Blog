@@ -4,16 +4,16 @@ import UiContainer from '~/common/components/ui/UiContainer.vue';
 import { computed, ref, onMounted, onUnmounted, nextTick, useRoute } from '#imports';
 
 const route = useRoute();
-const isHome = computed(() => route.path === '/');
+const isMainPage = computed(() => route.path === '/');
 const isHeroVisible = ref(true);
 const isShow = computed(() => {
-  return !isHome.value || !isHeroVisible.value;
+  return !isMainPage.value || !isHeroVisible.value;
 });
 
 let observer: IntersectionObserver | null = null;
 
 onMounted(() => {
-  if (!isHome.value) {
+  if (!isMainPage.value) {
     return;
   }
 
@@ -40,10 +40,11 @@ onUnmounted(() => observer?.disconnect());
 
 <template>
   <UiContainer
-    v-if="isShow"
+    v-show="isShow"
     as="header"
-    class="flex flex:column fixed w:full z:10 contain:layout|style"
+    class="fixed w:full z:10 contain:layout|style"
+    :padding="false"
   >
-    <NavBar title="R — Repin" image="/images/avatar.jpeg" url="@allrpn" class="absolute" />
+    <NavBar title="R — Repin" image="/images/avatar.jpeg" url="@allrpn" />
   </UiContainer>
 </template>

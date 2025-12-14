@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import UiButton from '~/common/components/ui/UiButton.vue';
+import UiContainer from '~/common/components/ui/UiContainer.vue';
+import { useRoute, computed } from '#imports';
 
 interface Props {
   title: string;
@@ -8,12 +10,17 @@ interface Props {
 }
 
 defineProps<Props>();
+
+const route = useRoute();
+const isMainPage = computed(() => route.path === '/');
 </script>
 
 <template>
-  <nav
-    class="flex jc:space-between ai:center height:40px mb:32 z:10"
+  <UiContainer
+    :size="!isMainPage ? 'sm' : null"
+    class="flex jc:space-between ai:center height:40px z:10 rel px:24 py:48 px:48@sm"
     aria-label="Основная навигация"
+    :padding="false"
   >
     <NuxtLink to="/" class="flex ai:center gap:10 text-decoration:none">
       <NuxtImg
@@ -40,6 +47,6 @@ defineProps<Props>();
       <Icon name="mdi:telegram" />
       Подписаться
     </UiButton>
-  </nav>
-  <div class="abs h:70% w:full bd:blur(5px) top:0 left:0"></div>
+  </UiContainer>
+  <div class="abs h:full w:full bd:blur(5px) top:0 left:0"></div>
 </template>

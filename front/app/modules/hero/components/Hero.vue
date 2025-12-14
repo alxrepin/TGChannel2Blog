@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import HeroTitle from '~/modules/hero/components/HeroTitle.vue';
-import SubscribeButton from '~/features/SubscribeButton.vue';
 import HeroStatistics from '~/modules/hero/components/HeroStatistics.vue';
 import HeroAvatar from '~/modules/hero/components/HeroAvatar.vue';
 import { useChannelData } from '~/common/composables/useChannelData';
+import UiButton from '~/common/components/ui/UiButton.vue';
 
 const data = useChannelData();
 </script>
@@ -15,6 +15,15 @@ const data = useChannelData();
     <div class="pb:20">
       <HeroStatistics :subscriber-count="data.subscriberCount" />
     </div>
-    <SubscribeButton :telegram-handle="data.telegramHandle" />
+    <UiButton
+      tag="a"
+      :href="data.telegramHandle"
+      target="_blank"
+      rel="noopener noreferrer"
+      size="md"
+    >
+      <Icon name="mdi:telegram" />
+      Подписаться
+    </UiButton>
   </div>
 </template>

@@ -24,7 +24,7 @@ const containerClasses = computed(() => {
     full: 'w:full',
   };
 
-  const paddingClass = props.padding ? 'p:48' : '';
+  const paddingClass = props.padding ? 'p:24 p:48@sm' : '';
 
   return `${base} ${sizes[props.size]} ${paddingClass}`;
 });

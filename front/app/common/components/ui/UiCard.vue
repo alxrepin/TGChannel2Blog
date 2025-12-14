@@ -13,8 +13,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const cardClasses = computed(() => {
   const base = 'r:24 rel';
-  const hover =
-    'outline:1|solid|fade-80:hover box-shadow:0|0|20|10|fade-88:hover ~ease-in|300ms ~property:all';
 
   const variants = {
     default: 'bg:white',
@@ -29,7 +27,7 @@ const cardClasses = computed(() => {
     lg: 'p:32',
   };
 
-  return `${base} ${variants[props.variant]} ${paddings[props.padding]} ${hover}`;
+  return `${base} ${variants[props.variant]} ${paddings[props.padding]}`;
 });
 </script>
 
