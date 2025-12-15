@@ -1,16 +1,19 @@
 package minio
 
 import (
+	"app/internal/domain/service"
 	"bytes"
 	"context"
+	"fmt"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type Client struct {
-	client *minio.Client
-	bucket string
+	client   *minio.Client
+	bucket   string
+	endpoint string
 }
 
 func NewClient(endpoint, accessKey, secretKey, bucket string) (*Client, error) {
@@ -23,19 +26,29 @@ func NewClient(endpoint, accessKey, secretKey, bucket string) (*Client, error) {
 	}
 
 	return &Client{
-		client: client,
-		bucket: bucket,
+		client:   client,
+		bucket:   bucket,
+		endpoint: endpoint,
 	}, nil
 }
 
-func (c *Client) Upload(objectName string, data []byte, contentType string) error {
+func (c *Client) Upload(ctx context.Context, objectName string, data []byte, contentType string) (string, error) {
 	_, err := c.client.PutObject(
-		context.Background(),
+		ctx,
 		c.bucket,
 		objectName,
 		bytes.NewReader(data),
 		int64(len(data)),
 		minio.PutObjectOptions{ContentType: contentType},
 	)
-	return err
+	if err != nil {
+		return "", err
+	}
+
+	// Return the URL to the uploaded object
+	url := fmt.Sprintf("http://%s/%s/%s", c.endpoint, c.bucket, objectName)
+	return url, nil
 }
+
+// Ensure Client implements service.Storage
+var _ service.Storage = (*Client)(nil)

@@ -6,10 +6,7 @@ import (
 	"log"
 
 	"app/internal/application"
-	"app/internal/application/usecase/sync"
-	"app/internal/infrastructure/bus"
 	"app/internal/infrastructure/minio"
-	"app/internal/infrastructure/postgres"
 	"app/internal/infrastructure/telegram"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -55,22 +52,7 @@ func main() {
 
 	repository := telegram.NewRawMessageRepository(client, minioClient)
 
-	bus := bus.NewNatsBus(js)
-	uc := sync.NewLoadHistoryRawMessagesUseCase(repository, bus)
+	messages, err := repository.GetByID(context.Background(), "allrpn", 61)
 
-	err = uc.Execute(context.Background(), config.ChannelUsername)
-	if err != nil {
-		log.Fatalf("failed to sync messages: %v", err)
-	}
-
-	channelRepo := postgres.NewChannelRepository(db)
-	channelInfo, err := repository.GetChannelInfo(context.Background(), config.ChannelUsername)
-	if err != nil {
-		log.Fatalf("failed to get channel info: %v", err)
-	}
-
-	err = channelRepo.CreateOrUpdate(context.Background(), channelInfo)
-	if err != nil {
-		log.Fatalf("failed to save channel info: %v", err)
-	}
+	log.Printf("%v", messages.Media)
 }

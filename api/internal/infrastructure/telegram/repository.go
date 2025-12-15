@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"app/internal/domain"
+	"app/internal/domain/service"
 
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/telegram/downloader"
@@ -16,12 +17,14 @@ import (
 type RawMessageRepository struct {
 	client  *Client
 	factory *RawMessageFactory
+	storage service.Storage
 }
 
-func NewRawMessageRepository(client *Client) *RawMessageRepository {
+func NewRawMessageRepository(client *Client, storage service.Storage) *RawMessageRepository {
 	return &RawMessageRepository{
 		client:  client,
 		factory: NewRawMessageFactory(),
+		storage: storage,
 	}
 }
 
@@ -53,13 +56,13 @@ func (r *RawMessageRepository) DownloadMedia(ctx context.Context, media domain.M
 	err := r.client.Run(ctx, func(ctx context.Context, client *telegram.Client) error {
 		var location tg.InputFileLocationClass
 
-		fmt.Printf(string(media.FileReference))
 		switch media.Type {
 		case domain.MediaTypePhoto:
 			location = &tg.InputPhotoFileLocation{
 				ID:            media.ID,
 				AccessHash:    media.AccessHash,
 				FileReference: media.FileReference,
+				ThumbSize:     media.PhotoSizeType,
 			}
 		case domain.MediaTypeVideo, domain.MediaTypeAudio, domain.MediaTypeDocument:
 			location = &tg.InputDocumentFileLocation{
@@ -95,11 +98,32 @@ func (r *RawMessageRepository) GetChannelInfo(ctx context.Context, channelUserna
 			return err
 		}
 
-		// Print avatar link to console
+		var avatarURL *string
 		if tgChannel.Photo != nil {
-			//if photo, ok := tgChannel.Photo.(*tg.ChatPhoto); ok {
-			//	//fmt.Printf("Avatar link: https://t.me/%s\n", channelUsername, photo)
-			//}
+			if photo, ok := tgChannel.Photo.(*tg.ChatPhoto); ok {
+				// Download the photo using InputPeerPhotoFileLocation
+				location := &tg.InputPeerPhotoFileLocation{
+					Peer:    &tg.InputPeerChannel{ChannelID: tgChannel.ID, AccessHash: tgChannel.AccessHash},
+					PhotoID: photo.PhotoID,
+				}
+
+				d := downloader.NewDownloader()
+				builder := d.Download(client.API(), location)
+				buf := &bytes.Buffer{}
+				_, err := builder.Stream(ctx, buf)
+				if err != nil {
+					return fmt.Errorf("failed to download channel photo: %w", err)
+				}
+
+				// Upload to storage
+				objectName := fmt.Sprintf("channel_avatars/%d.jpg", tgChannel.ID)
+				url, err := r.storage.Upload(ctx, objectName, buf.Bytes(), "image/jpeg")
+				if err != nil {
+					return fmt.Errorf("failed to upload channel photo: %w", err)
+				}
+
+				avatarURL = &url
+			}
 		}
 
 		channel = &domain.Channel{
@@ -107,13 +131,35 @@ func (r *RawMessageRepository) GetChannelInfo(ctx context.Context, channelUserna
 			Name:          channelUsername,
 			Title:         tgChannel.Title,
 			Description:   about,
-			Avatar:        nil,
-			CreatedAt:     time.Unix(int64(tgChannel.Date), 0),
+			Avatar:        avatarURL,
 			Subscriptions: subscriptions,
+			CreatedAt:     time.Unix(int64(tgChannel.Date), 0),
 		}
 
 		return nil
 	})
 
 	return channel, err
+}
+
+func (r *RawMessageRepository) GetByID(ctx context.Context, channelUsername string, messageID int) (*domain.RawMessage, error) {
+	var message *domain.RawMessage
+
+	err := r.client.Run(ctx, func(ctx context.Context, client *telegram.Client) error {
+		tgMessage, err := r.client.FetchMessage(ctx, client, channelUsername, messageID)
+		if err != nil {
+			return err
+		}
+
+		if tgMessage == nil {
+			return nil
+		}
+
+		rawMsg := r.factory.Create(tgMessage)
+		message = &rawMsg
+
+		return nil
+	})
+
+	return message, err
 }

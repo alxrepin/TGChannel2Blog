@@ -1,13 +1,11 @@
 package application
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
@@ -22,7 +20,6 @@ type Config struct {
 	MinioAccessKey  string
 	MinioSecretKey  string
 	MinioBucket     string
-	DB              *pgxpool.Pool
 }
 
 func LoadConfig() (*Config, error) {
@@ -103,12 +100,6 @@ func LoadConfig() (*Config, error) {
 		return nil, errors.New("MINIO_BUCKET environment variable is required")
 	}
 
-	// todo: вынести отсюда!
-	db, err := pgxpool.New(context.Background(), databaseURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %w", err)
-	}
-
 	return &Config{
 		APIID:           apiID,
 		APIHash:         apiHash,
@@ -120,6 +111,5 @@ func LoadConfig() (*Config, error) {
 		MinioAccessKey:  minioAccessKey,
 		MinioSecretKey:  minioSecretKey,
 		MinioBucket:     minioBucket,
-		DB:              db,
 	}, nil
 }

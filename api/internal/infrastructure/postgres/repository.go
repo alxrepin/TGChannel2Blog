@@ -148,3 +148,27 @@ func (r *ChannelRepository) Get(ctx context.Context) (*domain.Channel, error) {
 
 	return &channel, nil
 }
+
+func (r *ChannelRepository) GetByID(ctx context.Context, id int64) (*domain.Channel, error) {
+	var channel domain.Channel
+
+	query := `
+		SELECT id, name, title, description, avatar, subscriptions
+		FROM channels
+		WHERE id = $1
+	`
+
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&channel.ID,
+		&channel.Name,
+		&channel.Title,
+		&channel.Description,
+		&channel.Avatar,
+		&channel.Subscriptions,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &channel, nil
+}

@@ -8,6 +8,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	_ "app/docs"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -29,8 +31,14 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	postRepo := postgres.NewPostRepository(config.DB)
-	channelRepo := postgres.NewChannelRepository(config.DB)
+	db, err := pgxpool.New(context.Background(), config.DatabaseURL)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	postRepo := postgres.NewPostRepository(db)
+	channelRepo := postgres.NewChannelRepository(db)
 	listPostsUseCase := posts.NewListPostsUseCase(postRepo)
 	getChannelUseCase := channel.NewGetChannelUseCase(channelRepo)
 

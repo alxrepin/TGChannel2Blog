@@ -31,8 +31,8 @@ services:
     image: "minio/minio"
     container_name: "tgchannel2blog-minio"
     environment:
-      MINIO_ACCESS_KEY: "minioadmin"
-      MINIO_SECRET_KEY: "minioadmin"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
     restart: "on-failure"
     expose:
       - "9000"
@@ -43,3 +43,13 @@ services:
     volumes:
       - "../../var/docker/minio:/data"
     command: server /data --console-address ":9001"
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set myminio http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}; do sleep 2; done;
+      mc mb -p myminio/${MINIO_BUCKET} || true;
+      mc anonymous set download myminio/${MINIO_BUCKET} || true;
+      "

@@ -43,36 +43,64 @@ func (f *RawMessageFactory) Create(msg *tg.Message) domain.RawMessage {
 func (f *RawMessageFactory) extractMedia(media tg.MessageMediaClass) *domain.Media {
 	switch m := media.(type) {
 	case *tg.MessageMediaPhoto:
-		if m.Photo != nil {
-			if photo, ok := m.Photo.(*tg.Photo); ok {
-				return &domain.Media{
-					Type:          domain.MediaTypePhoto,
-					ID:            photo.ID,
-					AccessHash:    photo.AccessHash,
-					FileReference: photo.FileReference,
-				}
+		photo, ok := m.Photo.(*tg.Photo)
+		if !ok || photo == nil {
+			return nil
+		}
+
+		var (
+			bestSize *tg.PhotoSize
+			maxArea  int
+		)
+
+		for _, s := range photo.Sizes {
+			ps, ok := s.(*tg.PhotoSize)
+			if !ok {
+				continue
+			}
+
+			area := ps.W * ps.H
+
+			if area > maxArea {
+				maxArea = area
+				bestSize = ps
 			}
 		}
+
+		if bestSize == nil {
+			return nil
+		}
+
+		return &domain.Media{
+			Type:          domain.MediaTypePhoto,
+			ID:            photo.ID,
+			AccessHash:    photo.AccessHash,
+			FileReference: append([]byte(nil), photo.FileReference...),
+			PhotoSizeType: bestSize.Type,
+		}
+
 	case *tg.MessageMediaDocument:
-		doc := m.Document
+		doc, ok := m.Document.(*tg.Document)
+		if !ok || doc == nil {
+			return nil
+		}
 
-		if doc, ok := doc.(*tg.Document); ok {
-			mediaType := domain.MediaTypeDocument
+		mediaType := domain.MediaTypeDocument
 
-			if doc.MimeType != "" {
-				if len(doc.MimeType) >= 5 && doc.MimeType[:5] == "video" {
-					mediaType = domain.MediaTypeVideo
-				} else if len(doc.MimeType) >= 5 && doc.MimeType[:5] == "audio" {
-					mediaType = domain.MediaTypeAudio
-				}
+		for _, attr := range doc.Attributes {
+			switch attr.(type) {
+			case *tg.DocumentAttributeVideo:
+				mediaType = domain.MediaTypeVideo
+			case *tg.DocumentAttributeAudio:
+				mediaType = domain.MediaTypeAudio
 			}
+		}
 
-			return &domain.Media{
-				Type:          mediaType,
-				ID:            doc.ID,
-				AccessHash:    doc.AccessHash,
-				FileReference: doc.FileReference,
-			}
+		return &domain.Media{
+			Type:          mediaType,
+			ID:            doc.ID,
+			AccessHash:    doc.AccessHash,
+			FileReference: append([]byte(nil), doc.FileReference...),
 		}
 	}
 

@@ -12,10 +12,11 @@ setup: local
 build:
 	go build -o ./bin/server cmd/server/main.go \
 		&& go build -o ./bin/sync cmd/sync/main.go \
-		&& go build -o ./bin/subscriber cmd/subscriber/main.go
+		&& go build -o ./bin/subscriber cmd/subscriber/main.go \
+		&& go build -o ./bin/media_processor cmd/media_processor/main.go
 
 local:
-	docker compose -f ./.docker/compose/compose.yml up -d $(if $(filter 1, $(BUILD)),--build,)
+	docker compose --env-file .envaw-f ./.docker/compose/compose.yml up -d $(if $(filter 1, $(BUILD)),--build,)
 
 stop:
 	@docker ps --filter "name=tgchannel2blog" --format "{{.ID}}" | xargs -r docker stop

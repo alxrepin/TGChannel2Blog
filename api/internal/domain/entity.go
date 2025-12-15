@@ -16,6 +16,7 @@ type Media struct {
 	ID            int64     `json:"id"`
 	AccessHash    int64     `json:"access_hash"`
 	FileReference []byte    `json:"file_reference"`
+	PhotoSizeType string    // ОБЯЗАТЕЛЬНО для фото
 }
 
 type RawMessageEntityType string
@@ -62,10 +63,16 @@ type Post struct {
 }
 
 type Channel struct {
-	ID            int64   `json:"id" db:"id"`
-	Name          string  `json:"name" db:"name"`
-	Title         string  `json:"title" db:"title"`
-	Description   *string `json:"description,omitempty" db:"description"`
-	Avatar        *string `json:"avatar,omitempty" db:"avatar"`
-	Subscriptions int64   `json:"subscriptions" db:"subscriptions"`
+	ID            int64     `json:"id" db:"id"`
+	Name          string    `json:"name" db:"name"`
+	Title         string    `json:"title" db:"title"`
+	Description   *string   `json:"description,omitempty" db:"description"`
+	Avatar        *string   `json:"avatar,omitempty" db:"avatar"`
+	Subscriptions int64     `json:"subscriptions" db:"subscriptions"`
+	CreatedAt     time.Time `json:"created_at" db:"created_at"`
+}
+
+type MediaMessage struct {
+	ID      int   `json:"id"`
+	GroupID int64 `json:"group_id"`
 }

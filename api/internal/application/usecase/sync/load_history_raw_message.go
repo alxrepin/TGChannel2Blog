@@ -27,7 +27,7 @@ func (uc *LoadHistoryRawMessagesUseCase) Execute(ctx context.Context, channelUse
 	for _, msg := range messages {
 		jsonBytes, err := json.Marshal(msg)
 
-		if err != nil {
+		if err != nil && jsonBytes != nil {
 			log.Printf("failed to marshal message %d: %v", msg.ID, err)
 			continue
 		}

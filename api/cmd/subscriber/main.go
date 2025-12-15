@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"time"
 
 	"app/internal/application"
 	"app/internal/application/usecase/sync"
@@ -11,7 +12,7 @@ import (
 	"app/internal/infrastructure/bus"
 	"app/internal/infrastructure/postgres"
 
-	"github.com/ThreeDotsLabs/watermill-nats/v2/pkg/jetstream"
+	"github.com/jackc/pgx/v5/pgxpool"
 	nc "github.com/nats-io/nats.go"
 )
 
@@ -20,6 +21,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
+
+	db, err := pgxpool.New(context.Background(), config.DatabaseURL)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
 
 	conn, err := nc.Connect(config.NATSURL)
 	if err != nil {
@@ -48,69 +55,85 @@ func main() {
 		log.Fatalf("failed to create media stream: %v", err)
 	}
 
-	subscriber, err := jetstream.NewSubscriber(jetstream.SubscriberConfig{
-		URL:                 config.NATSURL,
-		ResourceInitializer: jetstream.GroupedConsumer("subscriber"),
-	})
+	bus := bus.NewNatsBus(js)
 
-	if err != nil {
-		log.Fatalf("failed to create subscriber: %v", err)
-	}
-	defer subscriber.Close()
+	postRepository := postgres.NewPostRepository(db)
+	uc := sync.NewSyncRawMessageUseCase(postRepository)
 
-	publisher, err := jetstream.NewPublisher(
-		jetstream.PublisherConfig{
-			URL: config.NATSURL,
-		},
-	)
-	if err != nil {
-		log.Fatalf("failed to create publisher: %v", err)
-	}
-	defer publisher.Close()
-
-	bus := bus.NewWatermillBus(publisher)
-
-	repository := postgres.NewPostRepository(config.DB)
-	uc := sync.NewSyncRawMessageUseCase(repository)
-
-	messages, err := subscriber.Subscribe(context.Background(), string(domain.RawMessageReceived))
+	sub, err := js.PullSubscribe(string(domain.RawMessageReceived), "subscriber")
 	if err != nil {
 		log.Fatalf("failed to subscribe: %v", err)
 	}
 
 	log.Println("Subscriber started, waiting for messages...")
 
-	for msg := range messages {
-		var rawMessage domain.RawMessage
-		err := json.Unmarshal(msg.Payload, &rawMessage)
+	for {
+		msgs, err := sub.Fetch(1, nc.MaxWait(5*time.Second))
 		if err != nil {
-			log.Printf("failed to unmarshal message: %v", err)
-			msg.Ack()
+			if err == nc.ErrTimeout {
+				continue
+			}
+			log.Printf("failed to fetch messages: %v", err)
 			continue
 		}
 
-		if (rawMessage.Text == nil || *rawMessage.Text == "") && rawMessage.GroupID > 0 {
-			data, err := json.Marshal(rawMessage)
+		for _, msg := range msgs {
+			var rawMessage domain.RawMessage
+			err := json.Unmarshal(msg.Data, &rawMessage)
 			if err != nil {
-				log.Printf("failed to marshal raw message for media: %v", err)
+				log.Printf("failed to unmarshal message: %v", err)
 				msg.Ack()
 				continue
 			}
-			err = bus.Dispatch(domain.MediaReceived, data)
-			if err != nil {
-				log.Printf("failed to dispatch media message: %v", err)
-			}
-			msg.Ack()
-			continue
-		}
 
-		err = uc.Execute(context.Background(), rawMessage)
-		if err != nil {
-			log.Printf("failed to process message %d: %v", rawMessage.ID, err)
-			msg.Nack()
-		} else {
-			log.Printf("Successfully processed message %d", rawMessage.ID)
-			msg.Ack()
+			if rawMessage.ID != 61 {
+				continue
+			}
+
+			if (rawMessage.Text == nil || *rawMessage.Text == "") && rawMessage.GroupID > 0 {
+				mediaMsg := domain.MediaMessage{
+					ID:      rawMessage.ID,
+					GroupID: rawMessage.GroupID,
+				}
+				data, err := json.Marshal(mediaMsg)
+				if err != nil {
+					log.Printf("failed to marshal media message: %v", err)
+					msg.Ack()
+					continue
+				}
+				err = bus.Dispatch(domain.MediaReceived, data)
+				if err != nil {
+					log.Printf("failed to dispatch media message: %v", err)
+				}
+				msg.Ack()
+				continue
+			}
+
+			if rawMessage.Media != nil {
+				mediaMsg := domain.MediaMessage{
+					ID:      rawMessage.ID,
+					GroupID: rawMessage.GroupID,
+				}
+				data, err := json.Marshal(mediaMsg)
+				if err != nil {
+					log.Printf("failed to marshal media message: %v", err)
+				} else {
+					log.Printf("dispatching media message: %v", string(data))
+					err = bus.Dispatch(domain.MediaReceived, data)
+					if err != nil {
+						log.Printf("failed to dispatch media message: %v", err)
+					}
+				}
+			}
+
+			err = uc.Execute(context.Background(), rawMessage)
+			if err != nil {
+				log.Printf("failed to process message %d: %v", rawMessage.ID, err)
+				msg.Nak()
+			} else {
+				log.Printf("Successfully processed message %d", rawMessage.ID)
+				msg.Ack()
+			}
 		}
 	}
 }

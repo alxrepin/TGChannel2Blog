@@ -4,6 +4,7 @@ import "context"
 
 type RawMessageRepository interface {
 	GetAll(ctx context.Context, channelUsername string) ([]RawMessage, error)
+	GetByID(ctx context.Context, channelUsername string, messageID int) (*RawMessage, error)
 }
 
 type PostRepository interface {
@@ -14,4 +15,5 @@ type PostRepository interface {
 type ChannelRepository interface {
 	CreateOrUpdate(ctx context.Context, channel *Channel) error
 	Get(ctx context.Context) (*Channel, error)
+	GetByID(ctx context.Context, id int64) (*Channel, error)
 }
