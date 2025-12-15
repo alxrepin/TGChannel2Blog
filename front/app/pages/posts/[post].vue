@@ -3,7 +3,7 @@ import PostNavigation from '~/modules/posts/components/PostNavigation.vue';
 import PostContent from '~/modules/posts/components/PostContent.vue';
 import UiContainer from '~/common/components/ui/UiContainer.vue';
 import { useHead, useRoute, createError, useAsyncData, computed } from '#imports';
-import { useChannelData } from '~/common/composables/useChannelData';
+import { useChannelData } from '~/modules/channel/composables/use-channel-data';
 import { fetchPosts, mapPostSnippetToPost } from '~/modules/posts/api/posts';
 import PostCard from '~/modules/posts/components/PostCard.vue';
 

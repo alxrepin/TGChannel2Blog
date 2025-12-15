@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import UiContainer from '~/common/components/ui/UiContainer.vue';
-import { useRoute, computed } from '#imports';
+import { usePageData } from '~/common/composables/use-page-data';
 
 interface Props {
   text: string;
@@ -8,8 +8,7 @@ interface Props {
 
 defineProps<Props>();
 
-const route = useRoute();
-const isMainPage = computed(() => route.path === '/');
+const { isMainPage } = usePageData();
 </script>
 
 <template>

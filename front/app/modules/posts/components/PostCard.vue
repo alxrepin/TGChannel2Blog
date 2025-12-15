@@ -40,7 +40,7 @@ const formattedDate = computed(() => {
     <div
       :class="[
         'jc:space-between flex flex:column h:full',
-        hasImage ? 'width:70%@xs p:20' : 'p:20 w:full',
+        thumbnail ? 'width:70%@xs p:20' : 'p:20 w:full',
       ]"
     >
       <div>
@@ -52,7 +52,7 @@ const formattedDate = computed(() => {
           v-html="text"
         />
       </div>
-      <time :datetime="publishedAt" class="f:14 color:fade-64">
+      <time :datetime="formattedDate" class="f:14 color:fade-64">
         {{ formattedDate }}
       </time>
     </div>

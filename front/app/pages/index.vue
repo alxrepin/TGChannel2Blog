@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import Hero from '~/modules/hero/components/Hero.vue';
 import UiContainer from '~/common/components/ui/UiContainer.vue';
-import { useChannelData } from '~/common/composables/useChannelData';
+import { useChannelData } from '~/modules/channel/composables/use-channel-data';
 import { fetchPosts } from '~/modules/posts/api/posts';
 import { computed, useHead, useAsyncData } from '#imports';
 import PostCard from '~/modules/posts/components/PostCard.vue';
@@ -48,9 +47,6 @@ useHead({
 </script>
 
 <template>
-  <UiContainer class="flex flex:column ai:center">
-    <Hero />
-  </UiContainer>
   <UiContainer>
     <h2 class="f:24 f:bold pb:32">
       Посты <span class="pl:6 color:fade-70">{{ total }}</span>

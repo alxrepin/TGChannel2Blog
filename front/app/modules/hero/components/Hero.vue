@@ -2,28 +2,28 @@
 import HeroTitle from '~/modules/hero/components/HeroTitle.vue';
 import HeroStatistics from '~/modules/hero/components/HeroStatistics.vue';
 import HeroAvatar from '~/modules/hero/components/HeroAvatar.vue';
-import { useChannelData } from '~/common/composables/useChannelData';
+import { useChannelData } from '~/modules/channel/composables/use-channel-data';
 import UiButton from '~/common/components/ui/UiButton.vue';
+import UiContainer from '~/common/components/ui/UiContainer.vue';
 
-const data = useChannelData();
+const { data: channel } = useChannelData();
 </script>
 
 <template>
-  <div id="hero" class="flex flex:column ai:center text:center">
-    <HeroAvatar :src="data.avatar" :alt="data.name" class="mb:20" />
-    <HeroTitle :name="data.name" :description="data.description" />
+  <UiContainer
+    id="hero"
+    as="div"
+    class="flex flex:column ai:center text:center my:88"
+    :padding="false"
+  >
+    <HeroAvatar v-if="channel.avatar" :src="channel.avatar" :alt="channel.title" class="mb:20" />
+    <HeroTitle :name="channel.title" :description="channel.description" />
     <div class="pb:20">
-      <HeroStatistics :subscriber-count="data.subscriberCount" />
+      <HeroStatistics :subscribers="channel.subscriptions" />
     </div>
-    <UiButton
-      tag="a"
-      :href="data.telegramHandle"
-      target="_blank"
-      rel="noopener noreferrer"
-      size="md"
-    >
+    <UiButton tag="a" :href="channel.url" target="_blank" rel="noopener noreferrer" size="md">
       <Icon name="mdi:telegram" />
       Подписаться
     </UiButton>
-  </div>
+  </UiContainer>
 </template>
