@@ -12,6 +12,7 @@ import (
 
 	_ "app/docs"
 	"app/internal/application"
+	"app/internal/application/usecase/channel"
 	"app/internal/application/usecase/posts"
 	"app/internal/infrastructure/postgres"
 	v1 "app/internal/presentation/http/api/v1"
@@ -29,14 +30,19 @@ func main() {
 	}
 
 	postRepo := postgres.NewPostRepository(config.DB)
+	channelRepo := postgres.NewChannelRepository(config.DB)
 	listPostsUseCase := posts.NewListPostsUseCase(postRepo)
+	getChannelUseCase := channel.NewGetChannelUseCase(channelRepo)
+
 	postsController := v1.NewPostsController(listPostsUseCase)
+	channelController := v1.NewChannelController(getChannelUseCase)
 
 	router := gin.Default()
 	router.Use(cors.Default())
-	
+
 	api := router.Group("/api/v1")
 	api.GET("/posts", postsController.ListPosts)
+	api.GET("/channel", channelController.GetChannel)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
