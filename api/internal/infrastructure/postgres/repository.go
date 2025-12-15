@@ -11,8 +11,16 @@ type PostRepository struct {
 	db *pgxpool.Pool
 }
 
+type ChannelRepository struct {
+	db *pgxpool.Pool
+}
+
 func NewPostRepository(db *pgxpool.Pool) *PostRepository {
 	return &PostRepository{db: db}
+}
+
+func NewChannelRepository(db *pgxpool.Pool) *ChannelRepository {
+	return &ChannelRepository{db: db}
 }
 
 func (r *PostRepository) CreateOrUpdate(ctx context.Context, post *domain.Post) error {
@@ -40,7 +48,7 @@ func (r *PostRepository) CreateOrUpdate(ctx context.Context, post *domain.Post) 
 		post.SEOKeywords,
 		post.CreatedAt,
 	)
-	
+
 	return err
 }
 
@@ -92,4 +100,51 @@ func (r *PostRepository) GetList(ctx context.Context, page, limit int) ([]domain
 	}
 
 	return posts, count, nil
+}
+
+func (r *ChannelRepository) CreateOrUpdate(ctx context.Context, channel *domain.Channel) error {
+	query := `
+		INSERT INTO channels (id, name, title, description, avatar, subscriptions)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		ON CONFLICT (id) DO UPDATE SET
+			name = EXCLUDED.name,
+			title = EXCLUDED.title,
+			description = EXCLUDED.description,
+			avatar = EXCLUDED.avatar,
+			subscriptions = EXCLUDED.subscriptions
+	`
+	_, err := r.db.Exec(ctx, query,
+		channel.ID,
+		channel.Name,
+		channel.Title,
+		channel.Description,
+		channel.Avatar,
+		channel.Subscriptions,
+	)
+
+	return err
+}
+
+func (r *ChannelRepository) Get(ctx context.Context) (*domain.Channel, error) {
+	var channel domain.Channel
+
+	query := `
+		SELECT id, name, title, description, avatar, subscriptions
+		FROM channels
+		LIMIT 1
+	`
+
+	err := r.db.QueryRow(ctx, query).Scan(
+		&channel.ID,
+		&channel.Name,
+		&channel.Title,
+		&channel.Description,
+		&channel.Avatar,
+		&channel.Subscriptions,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &channel, nil
 }

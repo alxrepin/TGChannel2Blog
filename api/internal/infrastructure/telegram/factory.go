@@ -49,7 +49,7 @@ func (f *RawMessageFactory) extractMedia(media tg.MessageMediaClass) *domain.Med
 					Type:          domain.MediaTypePhoto,
 					ID:            photo.ID,
 					AccessHash:    photo.AccessHash,
-					FileReference: string(photo.FileReference),
+					FileReference: photo.FileReference,
 				}
 			}
 		}
@@ -71,7 +71,7 @@ func (f *RawMessageFactory) extractMedia(media tg.MessageMediaClass) *domain.Med
 				Type:          mediaType,
 				ID:            doc.ID,
 				AccessHash:    doc.AccessHash,
-				FileReference: string(doc.FileReference),
+				FileReference: doc.FileReference,
 			}
 		}
 	}

@@ -18,6 +18,10 @@ type Config struct {
 	ChannelUsername string
 	DatabaseURL     string
 	NATSURL         string
+	MinioURL        string
+	MinioAccessKey  string
+	MinioSecretKey  string
+	MinioBucket     string
 	DB              *pgxpool.Pool
 }
 
@@ -79,6 +83,27 @@ func LoadConfig() (*Config, error) {
 		return nil, errors.New("NATS_URL environment variable is required")
 	}
 
+	minioURL := os.Getenv("MINIO_URL")
+	if minioURL == "" {
+		return nil, errors.New("MINIO_URL environment variable is required")
+	}
+
+	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
+	if minioAccessKey == "" {
+		return nil, errors.New("MINIO_ACCESS_KEY environment variable is required")
+	}
+
+	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
+	if minioSecretKey == "" {
+		return nil, errors.New("MINIO_SECRET_KEY environment variable is required")
+	}
+
+	minioBucket := os.Getenv("MINIO_BUCKET")
+	if minioBucket == "" {
+		return nil, errors.New("MINIO_BUCKET environment variable is required")
+	}
+
+	// todo: вынести отсюда!
 	db, err := pgxpool.New(context.Background(), databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -91,6 +116,10 @@ func LoadConfig() (*Config, error) {
 		ChannelUsername: channel,
 		DatabaseURL:     databaseURL,
 		NATSURL:         natsURL,
+		MinioURL:        minioURL,
+		MinioAccessKey:  minioAccessKey,
+		MinioSecretKey:  minioSecretKey,
+		MinioBucket:     minioBucket,
 		DB:              db,
 	}, nil
 }

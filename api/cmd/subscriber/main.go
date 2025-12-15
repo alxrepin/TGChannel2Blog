@@ -8,6 +8,7 @@ import (
 	"app/internal/application"
 	"app/internal/application/usecase/sync"
 	"app/internal/domain"
+	"app/internal/infrastructure/bus"
 	"app/internal/infrastructure/postgres"
 
 	"github.com/ThreeDotsLabs/watermill-nats/v2/pkg/jetstream"
@@ -39,6 +40,14 @@ func main() {
 		log.Fatalf("failed to create stream: %v", err)
 	}
 
+	_, err = js.AddStream(&nc.StreamConfig{
+		Name:     string(domain.MediaReceived),
+		Subjects: []string{string(domain.MediaReceived)},
+	})
+	if err != nil && err.Error() != "stream name already in use" {
+		log.Fatalf("failed to create media stream: %v", err)
+	}
+
 	subscriber, err := jetstream.NewSubscriber(jetstream.SubscriberConfig{
 		URL:                 config.NATSURL,
 		ResourceInitializer: jetstream.GroupedConsumer("subscriber"),
@@ -48,6 +57,18 @@ func main() {
 		log.Fatalf("failed to create subscriber: %v", err)
 	}
 	defer subscriber.Close()
+
+	publisher, err := jetstream.NewPublisher(
+		jetstream.PublisherConfig{
+			URL: config.NATSURL,
+		},
+	)
+	if err != nil {
+		log.Fatalf("failed to create publisher: %v", err)
+	}
+	defer publisher.Close()
+
+	bus := bus.NewWatermillBus(publisher)
 
 	repository := postgres.NewPostRepository(config.DB)
 	uc := sync.NewSyncRawMessageUseCase(repository)
@@ -69,6 +90,16 @@ func main() {
 		}
 
 		if (rawMessage.Text == nil || *rawMessage.Text == "") && rawMessage.GroupID > 0 {
+			data, err := json.Marshal(rawMessage)
+			if err != nil {
+				log.Printf("failed to marshal raw message for media: %v", err)
+				msg.Ack()
+				continue
+			}
+			err = bus.Dispatch(domain.MediaReceived, data)
+			if err != nil {
+				log.Printf("failed to dispatch media message: %v", err)
+			}
 			msg.Ack()
 			continue
 		}

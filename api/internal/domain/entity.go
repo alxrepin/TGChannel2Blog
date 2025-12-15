@@ -15,7 +15,7 @@ type Media struct {
 	Type          MediaType `json:"type"`
 	ID            int64     `json:"id"`
 	AccessHash    int64     `json:"access_hash"`
-	FileReference string    `json:"file_reference"`
+	FileReference []byte    `json:"file_reference"`
 }
 
 type RawMessageEntityType string
@@ -59,4 +59,13 @@ type Post struct {
 	SEOKeywords    *string    `json:"seo_keywords,omitempty" db:"seo_keywords"`
 	CreatedAt      time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt      *time.Time `json:"updated_at,omitempty" db:"updated_at"`
+}
+
+type Channel struct {
+	ID            int64   `json:"id" db:"id"`
+	Name          string  `json:"name" db:"name"`
+	Title         string  `json:"title" db:"title"`
+	Description   *string `json:"description,omitempty" db:"description"`
+	Avatar        *string `json:"avatar,omitempty" db:"avatar"`
+	Subscriptions int64   `json:"subscriptions" db:"subscriptions"`
 }

@@ -8,6 +8,7 @@ import (
 	"app/internal/application"
 	"app/internal/application/usecase/sync"
 	"app/internal/infrastructure/bus"
+	"app/internal/infrastructure/postgres"
 	"app/internal/infrastructure/telegram"
 
 	"github.com/ThreeDotsLabs/watermill-nats/v2/pkg/jetstream"
@@ -57,5 +58,16 @@ func main() {
 	err = uc.Execute(context.Background(), config.ChannelUsername)
 	if err != nil {
 		log.Fatalf("failed to sync messages: %v", err)
+	}
+
+	channelRepo := postgres.NewChannelRepository(config.DB)
+	channelInfo, err := repository.GetChannelInfo(context.Background(), config.ChannelUsername)
+	if err != nil {
+		log.Fatalf("failed to get channel info: %v", err)
+	}
+
+	err = channelRepo.CreateOrUpdate(context.Background(), channelInfo)
+	if err != nil {
+		log.Fatalf("failed to save channel info: %v", err)
 	}
 }

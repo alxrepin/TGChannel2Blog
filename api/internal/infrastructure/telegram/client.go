@@ -108,3 +108,46 @@ func (c *Client) FetchMessages(ctx context.Context, client *telegram.Client, cha
 
 	return allMessages, nil
 }
+
+func (c *Client) FetchChannelInfo(ctx context.Context, client *telegram.Client, channelUsername string) (*tg.Channel, *string, int64, error) {
+	resolve, err := client.API().ContactsResolveUsername(
+		ctx,
+		&tg.ContactsResolveUsernameRequest{
+			Username: channelUsername,
+		},
+	)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("resolve username failed: %w", err)
+	}
+
+	if len(resolve.Chats) == 0 {
+		return nil, nil, 0, fmt.Errorf("channel not found")
+	}
+
+	channel, ok := resolve.Chats[0].(*tg.Channel)
+	if !ok {
+		return nil, nil, 0, fmt.Errorf("not a channel")
+	}
+
+	chat, err := client.API().ChannelsGetFullChannel(ctx, &tg.InputChannel{
+		ChannelID:  channel.ID,
+		AccessHash: channel.AccessHash,
+	})
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("get full channel failed: %w", err)
+	}
+
+	cf, ok := chat.FullChat.(*tg.ChannelFull)
+	if !ok {
+		return nil, nil, 0, fmt.Errorf("full channel cast failed: %w", err)
+	}
+
+	about := cf.GetAbout()
+	subscriptions, ok := cf.GetParticipantsCount()
+
+	if !ok {
+		return nil, nil, 0, fmt.Errorf("get channel subscriptions count failed: %w", err)
+	}
+
+	return channel, &about, int64(subscriptions), nil
+}
